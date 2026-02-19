@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서시 — 윤동주</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Gaegu&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --petal-pink: #ffc2d1;
+    --petal-deep: #ff8fab;
+    --petal-light: #ffe5ec;
+    --text-cream: #fef9f3;
+    --text-dim: rgba(254, 249, 243, 0.6);
+    --overlay-dark: rgba(30, 20, 25, 0.45);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Nanum Myeongjo', serif;
+  }
+
+  /* ── Background ── */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: url('bg.jpg') center/cover no-repeat;
+    filter: brightness(0.85) saturate(1.1);
+  }
+  .bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(30,20,25,0.15) 0%, rgba(30,20,25,0.55) 100%),
+      linear-gradient(180deg, transparent 0%, rgba(30,20,25,0.3) 100%);
+  }
+
+  /* ── Petal System ── */
+  .petal-container {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none; overflow: hidden;
+  }
+  .petal {
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    top: -60px;
+    opacity: 0;
+    animation: petalFall var(--duration) var(--delay) ease-in-out infinite;
+  }
+  .petal svg {
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 2px 6px rgba(180, 80, 100, 0.25));
+  }
+
+  @keyframes petalFall {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg) scale(0.8); opacity: 0; }
+    8%   { opacity: var(--peak-opacity); }
+    50%  { transform: translateY(50vh) translateX(var(--drift)) rotate(var(--spin-mid)) scale(1); opacity: var(--peak-opacity); }
+    85%  { opacity: var(--peak-opacity, 0.5); }
+    100% { transform: translateY(110vh) translateX(var(--drift-end)) rotate(var(--spin-end)) scale(0.7); opacity: 0; }
+  }
+
+  /* ── Sparkle Particles ── */
+  .sparkle-container {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none;
+  }
+  .sparkle {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: radial-gradient(circle, rgba(255,255,255,0.9), transparent);
+    border-radius: 50%;
+    animation: sparkle var(--dur) var(--del) ease-in-out infinite;
+  }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: var(--bright, 0.7); transform: scale(1.5); }
+  }
+
+  /* ── Content ── */
+  .content {
+    position: relative; z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-cream);
+  }
+
+  /* ── Intro overlay ── */
+  .intro-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(40,25,35,0.85), rgba(20,10,18,0.95));
+    cursor: pointer;
+    transition: opacity 1.2s ease, visibility 1.2s ease;
+  }
+  .intro-overlay.hidden {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  .intro-icon {
+    width: 80px; height: 80px;
+    margin-bottom: 2rem;
+    animation: introFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(255, 182, 203, 0.4));
+  }
+  @keyframes introFloat {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-12px) rotate(5deg); }
+  }
+  .intro-text {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 1.1rem;
+    color: var(--petal-light);
+    letter-spacing: 0.3em;
+    animation: introPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes introPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* ── Poem ── */
+  .poem-title {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    letter-spacing: 0.5em;
+    color: var(--text-dim);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    font-weight: 400;
+  }
+  .poem-body {
+    max-width: 500px;
+  }
+  .poem-line {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: clamp(1.15rem, 3vw, 1.55rem);
+    line-height: 2.4;
+    letter-spacing: 0.08em;
+    color: var(--text-cream);
+    opacity: 0;
+    transform: translateY(25px);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .poem-line.blank {
+    height: 1.2em;
+  }
+  .poem-author {
+    margin-top: 2.5rem;
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    letter-spacing: 0.4em;
+    color: var(--text-dim);
+    opacity: 0;
+    transform: translateY(20px);
+    font-weight: 400;
+  }
+
+  .animate-in {
+    animation: fadeSlideIn 1.8s ease forwards;
+  }
+
+  @keyframes fadeSlideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Decorative line ── */
+  .deco-line {
+    width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--petal-pink), transparent);
+    margin: 1.8rem auto;
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .deco-line.animate-in {
+    animation: lineReveal 2s ease forwards;
+  }
+  @keyframes lineReveal {
+    to { opacity: 0.6; transform: scaleX(1); }
+  }
+
+  /* ── Audio Controls ── */
+  .audio-controls {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    z-index: 50;
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .audio-controls.visible { opacity: 1; }
+  .audio-controls:hover { opacity: 1 !important; }
+
+  .btn-audio {
+    width: 44px; height: 44px;
+    border: 1px solid rgba(255,194,209,0.3);
+    border-radius: 50%;
+    background: rgba(30,20,25,0.5);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--petal-pink);
+  }
+  .btn-audio:hover {
+    background: rgba(255,194,209,0.15);
+    border-color: var(--petal-pink);
+    transform: scale(1.05);
+  }
+  .btn-audio svg { width: 18px; height: 18px; }
+
+  .volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px; height: 3px;
+    background: rgba(255,194,209,0.25);
+    border-radius: 2px;
+    outline: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, width 0.3s ease;
+    width: 0;
+  }
+  .audio-controls:hover .volume-slider {
+    opacity: 1; width: 80px;
+  }
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--petal-pink);
+    cursor: pointer;
+  }
+
+  /* ── Bottom gradient ── */
+  .bottom-veil {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 120px; z-index: 3;
+    background: linear-gradient(transparent, rgba(30,20,25,0.4));
+    pointer-events: none;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 600px) {
+    .poem-line { white-space: normal; line-height: 2.2; }
+    .audio-controls { bottom: 1.2rem; right: 1.2rem; }
+    .volume-slider { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Intro Overlay -->
+<div class="intro-overlay" id="introOverlay">
+  <svg class="intro-icon" viewBox="0 0 80 80" fill="none">
+    <path d="M40 10 C25 10, 12 25, 20 38 C10 32, 5 45, 18 52 C10 55, 12 68, 25 65 C22 75, 35 78, 40 70 C45 78, 58 75, 55 65 C68 68, 70 55, 62 52 C75 45, 70 32, 60 38 C68 25, 55 10, 40 10Z" fill="rgba(255,194,209,0.25)" stroke="rgba(255,194,209,0.6)" stroke-width="1"/>
+    <path d="M40 22 C33 22, 27 30, 32 37 C26 34, 22 42, 30 46 C24 48, 26 56, 34 54 C32 60, 38 62, 40 57 C42 62, 48 60, 46 54 C54 56, 56 48, 50 46 C58 42, 54 34, 48 37 C53 30, 47 22, 40 22Z" fill="rgba(255,143,175,0.3)" stroke="rgba(255,194,209,0.4)" stroke-width="0.5"/>
+    <circle cx="40" cy="40" r="4" fill="rgba(255,220,230,0.6)"/>
+  </svg>
+  <p class="intro-text">화면을 터치하세요</p>
+</div>
+
+<!-- Background -->
+<div class="bg"></div>
+
+<!-- Cherry Blossom Petals -->
+<div class="petal-container" id="petalContainer"></div>
+
+<!-- Sparkles -->
+<div class="sparkle-container" id="sparkleContainer"></div>
+
+<!-- Poem Content -->
+<div class="content">
+  <p class="poem-title" id="poemTitle">서 시</p>
+  <div class="poem-body" id="poemBody">
+    <p class="poem-line">죽는 날까지 하늘을 우러러</p>
+    <p class="poem-line">한 점 부끄러움이 없기를,</p>
+    <p class="poem-line blank"></p>
+    <p class="poem-line">잎새에 이는 바람에도</p>
+    <p class="poem-line">나는 괴로워했다.</p>
+    <p class="poem-line blank"></p>
+    <p class="poem-line">별을 노래하는 마음으로</p>
+    <p class="poem-line">모든 죽어 가는 것을 사랑해야지.</p>
+    <p class="poem-line blank"></p>
+    <p class="poem-line">그리고 나한테 주어진 길을</p>
+    <p class="poem-line">걸어가야겠다.</p>
+    <p class="poem-line blank"></p>
+    <p class="poem-line">오늘 밤에도 별이 바람에 스치운다.</p>
+  </div>
+  <div class="deco-line" id="decoLine"></div>
+  <p class="poem-author" id="poemAuthor">윤동주 &nbsp;—&nbsp; 1941. 11. 20.</p>
+</div>
+
+<div class="bottom-veil"></div>
+
+<!-- Audio -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<div class="audio-controls" id="audioControls">
+  <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="40">
+  <button class="btn-audio" id="btnMute" aria-label="음소거 토글">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="iconSound">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.08" class="sound-waves"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+(function() {
+  const music = document.getElementById('bgMusic');
+  const introOverlay = document.getElementById('introOverlay');
+  const audioControls = document.getElementById('audioControls');
+  const btnMute = document.getElementById('btnMute');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const iconSound = document.getElementById('iconSound');
+  let isMuted = false;
+
+  music.volume = 0.4;
+
+  // ── Intro ──
+  introOverlay.addEventListener('click', startExperience);
+  introOverlay.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    startExperience();
+  });
+
+  function startExperience() {
+    introOverlay.classList.add('hidden');
+    music.play().catch(() => {});
+    setTimeout(() => { audioControls.classList.add('visible'); }, 1500);
+    animatePoem();
+  }
+
+  // ── Poem Animation ──
+  function animatePoem() {
+    const title = document.getElementById('poemTitle');
+    const lines = document.querySelectorAll('.poem-line');
+    const deco = document.getElementById('decoLine');
+    const author = document.getElementById('poemAuthor');
+
+    let delay = 600;
+    title.style.animationDelay = delay + 'ms';
+    title.classList.add('animate-in');
+    delay += 1200;
+
+    lines.forEach((line, i) => {
+      if (line.classList.contains('blank')) {
+        delay += 400;
+        return;
+      }
+      line.style.animationDelay = delay + 'ms';
+      line.classList.add('animate-in');
+      delay += 700;
+    });
+
+    delay += 600;
+    deco.style.animationDelay = delay + 'ms';
+    deco.classList.add('animate-in');
+    delay += 800;
+
+    author.style.animationDelay = delay + 'ms';
+    author.classList.add('animate-in');
+  }
+
+  // ── Audio Controls ──
+  btnMute.addEventListener('click', function() {
+    isMuted = !isMuted;
+    music.muted = isMuted;
+    const waves = iconSound.querySelector('.sound-waves');
+    if (waves) waves.style.opacity = isMuted ? '0' : '1';
+    if (isMuted) {
+      iconSound.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+    } else {
+      iconSound.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.08" class="sound-waves"/>';
+    }
+  });
+
+  volumeSlider.addEventListener('input', function() {
+    music.volume = this.value / 100;
+    if (isMuted && this.value > 0) {
+      isMuted = false;
+      music.muted = false;
+      iconSound.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.08" class="sound-waves"/>';
+    }
+  });
+
+  // ── Petals ──
+  const petalContainer = document.getElementById('petalContainer');
+  const petalColors = [
+    { fill: '#ffc2d1', stroke: '#ffb3c6' },
+    { fill: '#ffb3c6', stroke: '#ff8fab' },
+    { fill: '#ffe5ec', stroke: '#ffc2d1' },
+    { fill: '#ffd6e0', stroke: '#ffb3c6' },
+    { fill: '#fff0f3', stroke: '#ffd6e0' },
+  ];
+
+  function createPetalSVG(color) {
+    const shapes = [
+      `<ellipse cx="12" cy="15" rx="10" ry="14" fill="${color.fill}" stroke="${color.stroke}" stroke-width="0.5" opacity="0.85"/>
+       <path d="M12 4 Q12 15 12 28" stroke="${color.stroke}" stroke-width="0.3" fill="none" opacity="0.5"/>`,
+      `<path d="M15 2 C5 5, 0 15, 8 25 C12 30, 18 28, 22 20 C28 10, 25 0, 15 2Z" fill="${color.fill}" stroke="${color.stroke}" stroke-width="0.5" opacity="0.8"/>`,
+      `<path d="M12 0 C4 4, 0 14, 6 22 C10 28, 16 26, 20 18 C24 10, 22 2, 12 0Z" fill="${color.fill}" stroke="${color.stroke}" stroke-width="0.5" opacity="0.75"/>
+       <path d="M12 2 Q10 12 8 22" stroke="${color.stroke}" stroke-width="0.3" fill="none" opacity="0.4"/>`,
+    ];
+    return shapes[Math.floor(Math.random() * shapes.length)];
+  }
+
+  function spawnPetal() {
+    const el = document.createElement('div');
+    el.className = 'petal';
+    const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+    const size = 18 + Math.random() * 22;
+    const duration = 10 + Math.random() * 14;
+    const drift = -80 + Math.random() * 160;
+    const driftEnd = drift + (-40 + Math.random() * 80);
+    const spinMid = -60 + Math.random() * 120;
+    const spinEnd = spinMid + (-90 + Math.random() * 180);
+
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      --size: ${size}px;
+      --duration: ${duration}s;
+      --delay: ${Math.random() * 2}s;
+      --drift: ${drift}px;
+      --drift-end: ${driftEnd}px;
+      --spin-mid: ${spinMid}deg;
+      --spin-end: ${spinEnd}deg;
+      --peak-opacity: ${0.4 + Math.random() * 0.4};
+    `;
+    el.innerHTML = `<svg viewBox="0 0 30 30" fill="none">${createPetalSVG(color)}</svg>`;
+    petalContainer.appendChild(el);
+
+    setTimeout(() => { el.remove(); }, (duration + 2) * 1000);
+  }
+
+  // Staggered initial petals
+  for (let i = 0; i < 15; i++) {
+    setTimeout(spawnPetal, i * 400);
+  }
+  setInterval(spawnPetal, 1200);
+
+  // ── Sparkles ──
+  const sparkleContainer = document.getElementById('sparkleContainer');
+  function spawnSparkle() {
+    const el = document.createElement('div');
+    el.className = 'sparkle';
+    const dur = 3 + Math.random() * 4;
+    el.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${Math.random() * 100}%;
+      --dur: ${dur}s;
+      --del: ${Math.random() * 3}s;
+      --bright: ${0.3 + Math.random() * 0.5};
+    `;
+    sparkleContainer.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 3) * 1000);
+  }
+  for (let i = 0; i < 25; i++) {
+    setTimeout(spawnSparkle, i * 200);
+  }
+  setInterval(spawnSparkle, 800);
+
+})();
+</script>
+</body>
+</html>
